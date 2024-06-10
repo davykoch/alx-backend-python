@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+""" module contains annotation of variables with specified values"""
 
 a: int = 1
 pi: float = 3.14
