@@ -1,53 +1,46 @@
 #!/usr/bin/env python3
 """
-Module for testing the access_nested_map function from utils.
+Module for testing the get_json function from utils.
 """
 
 import unittest
+from unittest.mock import patch, Mock
 from parameterized import parameterized
-from utils import access_nested_map
+from utils import get_json
 
 
-class TestAccessNestedMap(unittest.TestCase):
+class TestGetJson(unittest.TestCase):
     """
-    Test class for the access_nested_map function.
+    Test class for the get_json function.
     """
 
     @parameterized.expand([
-        ({"a": 1}, ("a",), 1),
-        ({"a": {"b": 2}}, ("a",), {"b": 2}),
-        ({"a": {"b": 2}}, ("a", "b"), 2),
+        ("http://example.com", {"payload": True}),
+        ("http://holberton.io", {"payload": False}),
     ])
-    def test_access_nested_map(
-            self,
-            nested_map: dict,
-            path: tuple,
-            expected: any
+    @patch('requests.get')
+    def test_get_json(
+        self,
+        test_url: str,
+        test_payload: dict,
+        mock_get: Mock
     ) -> None:
         """
-        Test that access_nested_map returns the expected
-        result for given inputs.
+        Test that utils.get_json returns the expected result.
         """
-        self.assertEqual(access_nested_map(nested_map, path), expected)
+        # Configure the mock to return a response with json() method
+        mock_response = Mock()
+        mock_response.json.return_value = test_payload
+        mock_get.return_value = mock_response
 
-    @parameterized.expand([
-        ({}, ("a",), "a"),
-        ({"a": 1}, ("a", "b"), "b"),
-    ])
-    def test_access_nested_map_exception(
-            self,
-            nested_map: dict,
-            path: tuple,
-            expected_exception_msg: str
-    ) -> None:
-        """
-        Test that access_nested_map raises KeyError with correct message
-        for invalid inputs.
-        """
-        with self.assertRaises(KeyError) as context:
-            access_nested_map(nested_map, path)
+        # Call the function with test input
+        result = get_json(test_url)
 
-        self.assertEqual(str(context.exception), f"'{expected_exception_msg}'")
+        # Check that requests.get was called once with test_url
+        mock_get.assert_called_once_with(test_url)
+
+        # Check that the output of get_json is equal to test_payload
+        self.assertEqual(result, test_payload)
 
 
 if __name__ == '__main__':
