@@ -1,46 +1,47 @@
 #!/usr/bin/env python3
 """
-Module for testing the get_json function from utils.
+Module for testing the memoize decorator from utils.
 """
 
 import unittest
 from unittest.mock import patch, Mock
-from parameterized import parameterized
-from utils import get_json
+from utils import memoize
 
 
-class TestGetJson(unittest.TestCase):
+class TestMemoize(unittest.TestCase):
     """
-    Test class for the get_json function.
+    Test class for the memoize decorator.
     """
 
-    @parameterized.expand([
-        ("http://example.com", {"payload": True}),
-        ("http://holberton.io", {"payload": False}),
-    ])
-    @patch('requests.get')
-    def test_get_json(
-        self,
-        test_url: str,
-        test_payload: dict,
-        mock_get: Mock
-    ) -> None:
+    def test_memoize(self) -> None:
         """
-        Test that utils.get_json returns the expected result.
+        Test that the memoize decorator works as expected.
         """
-        # Configure the mock to return a response with json() method
-        mock_response = Mock()
-        mock_response.json.return_value = test_payload
-        mock_get.return_value = mock_response
+        class TestClass:
+            def a_method(self):
+                return 42
 
-        # Call the function with test input
-        result = get_json(test_url)
+            @memoize
+            def a_property(self):
+                return self.a_method()
 
-        # Check that requests.get was called once with test_url
-        mock_get.assert_called_once_with(test_url)
+        with patch.object(
+            TestClass,
+            'a_method',
+            return_value=42
+        ) as mock_method:
+            test_obj = TestClass()
 
-        # Check that the output of get_json is equal to test_payload
-        self.assertEqual(result, test_payload)
+            # Call a_property twice
+            result1 = test_obj.a_property
+            result2 = test_obj.a_property
+
+            # Check that the results are correct
+            self.assertEqual(result1, 42)
+            self.assertEqual(result2, 42)
+
+            # Check that a_method was only called once
+            mock_method.assert_called_once()
 
 
 if __name__ == '__main__':
