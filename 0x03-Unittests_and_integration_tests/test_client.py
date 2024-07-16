@@ -6,21 +6,13 @@ Module for integration testing of the GithubOrgClient class.
 import unittest
 from unittest.mock import patch
 from parameterized import parameterized_class
-import requests
 from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 
 
 @parameterized_class(
     ("org_payload", "repos_payload", "expected_repos", "apache2_repos"),
-    [
-        (
-            TEST_PAYLOAD["org_payload"],
-            TEST_PAYLOAD["repos_payload"],
-            TEST_PAYLOAD["expected_repos"],
-            TEST_PAYLOAD["apache2_repos"]
-        )
-    ]
+    TEST_PAYLOAD
 )
 class TestIntegrationGithubOrgClient(unittest.TestCase):
     """
